@@ -1,4 +1,4 @@
-use crate::{MIN_SCORE, SearchCommand, SearchControl, SearchInfo, scoring::evaluate};
+use crate::{MAX_SCORE, MIN_SCORE, SearchCommand, SearchControl, SearchInfo};
 use crossbeam_channel::{Receiver, Sender};
 use shakmaty::{Chess, Move, Position};
 
@@ -39,28 +39,25 @@ impl Searcher {
 
         // Initial values
         let mut best_move = legal_moves[0];
-        let mut best_score = MIN_SCORE;
+        let mut alpha = MIN_SCORE;
+        let beta = MAX_SCORE;
 
         let mut negamax = NegaMax::new();
 
         for mv in position.legal_moves() {
+            // Score this move (By searching)
             let new_position = position.clone().play(mv).unwrap();
+            let score = -negamax.search(&new_position, _max_depth - 1, -beta, -alpha);
 
-            let score = if let Some(child_score) = negamax.search(&new_position, _max_depth) {
-                -child_score
-            } else {
-                // If child returns None (terminal position / depth limit reached), evaluate it
-                -evaluate(&new_position)
-            };
-
-            if score > best_score {
-                best_score = score;
+            // Update appropriately
+            if score > alpha {
+                alpha = score;
                 best_move = mv;
             }
         }
 
         // It is necessary to send info at least once to En Croissant (the user interface) before outputting best move.
-        self.send_info(0, vec![best_move], best_score, negamax.nodes_searched);
+        self.send_info(0, vec![best_move], alpha, negamax.nodes_searched);
 
         // Output best move
         self.info_tx.send(SearchInfo::BestMove(best_move)).unwrap();

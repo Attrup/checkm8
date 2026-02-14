@@ -7,9 +7,10 @@ pub type Score = i32;
 
 // Parameters
 const SEARCH_TIME_MS: u64 = 2000;
+
 const MATE_SCORE: Score = 19000;
 const MIN_SCORE: Score = -20000;
-const _MAX_SCORE: Score = 20000;
+const MAX_SCORE: Score = 20000;
 
 /// Instructions for the search thread
 pub enum SearchControl {
