@@ -1,8 +1,8 @@
 [package]
-name = "chessbot-starterkit"
+name = "checkm8"
 version = "0.1.0"
-edition = "2021"
-authors = ["Your Name"]
+edition = "2024"
+authors = ["Jonas Attrup"]
 
 [dependencies]
 chrono = "0.4.42"

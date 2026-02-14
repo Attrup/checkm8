@@ -1,6 +1,6 @@
-use chessbot_starterkit::search::Searcher;
-use chessbot_starterkit::{SearchCommand, SearchControl, SearchInfo};
-use criterion::{criterion_group, criterion_main, Criterion};
+use checkm8::search::Searcher;
+use checkm8::{SearchCommand, SearchControl, SearchInfo};
+use criterion::{Criterion, criterion_group, criterion_main};
 use crossbeam_channel::unbounded;
 use shakmaty::fen::Fen;
 use shakmaty::{CastlingMode, Chess};

@@ -1,5 +1,5 @@
-use chessbot_starterkit::bot::{controller::Controller, input::InputListener};
-use chessbot_starterkit::search::Searcher;
+use checkm8::bot::{controller::Controller, input::InputListener};
+use checkm8::search::Searcher;
 use crossbeam_channel::unbounded;
 use std::thread;
 

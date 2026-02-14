@@ -114,7 +114,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "chessbot-starterkit"
+name = "checkm8"
 version = "0.1.0"
 dependencies = [
  "chrono",

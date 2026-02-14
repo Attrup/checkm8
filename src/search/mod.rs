@@ -1,6 +1,10 @@
-use crate::{SearchCommand, SearchControl, SearchInfo};
+use crate::{MIN_SCORE, SearchCommand, SearchControl, SearchInfo, scoring::evaluate};
 use crossbeam_channel::{Receiver, Sender};
 use shakmaty::{Chess, Move, Position};
+
+mod negamax;
+
+use negamax::NegaMax;
 
 /// Executes search tasks.
 pub struct Searcher {
@@ -31,31 +35,35 @@ impl Searcher {
             SearchControl::TimeLimit(time_limit) => (u8::MAX, time_limit),
         };
 
-        /*
-         *
-         *
-         * Your search implementation here:
-         *
-         *
-         */
+        let legal_moves = position.legal_moves();
 
-        std::thread::sleep(std::time::Duration::from_millis(500));
+        // Initial values
+        let mut best_move = legal_moves[0];
+        let mut best_score = MIN_SCORE;
 
-        // Select random move as best move
-        let dummy_best_move = position.legal_moves()[std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_millis() as usize
-            % position.legal_moves().len()];
-        let dummy_best_score = 42;
+        let mut negamax = NegaMax::new();
+
+        for mv in position.legal_moves() {
+            let new_position = position.clone().play(mv).unwrap();
+
+            let score = if let Some(child_score) = negamax.search(&new_position, _max_depth) {
+                -child_score
+            } else {
+                // If child returns None (terminal position / depth limit reached), evaluate it
+                -evaluate(&new_position)
+            };
+
+            if score > best_score {
+                best_score = score;
+                best_move = mv;
+            }
+        }
 
         // It is necessary to send info at least once to En Croissant (the user interface) before outputting best move.
-        self.send_info(0, vec![dummy_best_move], dummy_best_score, 1234);
+        self.send_info(0, vec![best_move], best_score, negamax.nodes_searched);
 
         // Output best move
-        self.info_tx
-            .send(SearchInfo::BestMove(dummy_best_move))
-            .unwrap();
+        self.info_tx.send(SearchInfo::BestMove(best_move)).unwrap();
     }
 
     fn send_info(&self, depth: u8, pv: Vec<Move>, score: i32, nodes: u64) {
