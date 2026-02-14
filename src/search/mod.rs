@@ -1,4 +1,4 @@
-use crate::{MAX_SCORE, MIN_SCORE, SearchCommand, SearchControl, SearchInfo};
+use crate::{MAX_SCORE, MIN_SCORE, SearchCommand, SearchControl, SearchInfo, scoring::score_move};
 use crossbeam_channel::{Receiver, Sender};
 use shakmaty::{Chess, Move, Position};
 use std::time::{Duration, Instant};
@@ -69,7 +69,11 @@ impl Searcher {
             // Init searcher
             let mut negamax = NegaMax::new();
 
-            for mv in position.legal_moves() {
+            // Move ordering
+            let mut sorted_moves = position.legal_moves();
+            sorted_moves.sort_unstable_by_key(|mv| score_move(&position, mv));
+
+            for mv in sorted_moves {
                 // Score this move (By searching)
                 let new_position = position.clone().play(mv).unwrap();
 
@@ -84,13 +88,18 @@ impl Searcher {
                     alpha = score;
                     best_move = mv;
                 }
+
+                // Add some randomisation - update based on coinflip if equal
+                if score == alpha && rand::random() {
+                    best_move = mv;
+                }
             }
 
             if !timer.limit_exceeded() {
                 // Send info
                 self.send_info(
                     running_depth,
-                    vec![selected_move],
+                    vec![best_move],
                     alpha,
                     negamax.nodes_searched,
                 );

@@ -1,3 +1,5 @@
+use std::i32;
+
 pub mod bot;
 pub mod scoring;
 pub mod search;
@@ -8,9 +10,9 @@ pub type Score = i32;
 // Parameters
 const SEARCH_TIME_MS: u64 = 2000;
 
-const MATE_SCORE: Score = -100000;
-const MIN_SCORE: Score = -200000;
-const MAX_SCORE: Score = 200000;
+const MATE_SCORE: Score = i32::MIN + 1;
+const MIN_SCORE: Score = i32::MIN;
+const MAX_SCORE: Score = i32::MAX;
 
 /// Instructions for the search thread
 pub enum SearchControl {

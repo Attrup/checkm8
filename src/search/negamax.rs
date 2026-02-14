@@ -1,4 +1,8 @@
-use crate::{Score, scoring::evaluate, search::Timer};
+use crate::{
+    Score,
+    scoring::{evaluate, score_move},
+    search::Timer,
+};
 use shakmaty::{Chess, Position};
 
 pub struct NegaMax {
@@ -20,15 +24,18 @@ impl NegaMax {
     ) -> Option<Score> {
         // Update state
         self.nodes_searched += 1;
-        let legal_moves = position.legal_moves();
 
         // Depth limit reached / Terminal state
-        if depth == 0 || legal_moves.is_empty() {
-            return Some(evaluate(&position));
+        if depth == 0 || position.is_game_over() {
+            return Some(evaluate(&position, depth));
         }
 
+        // Move ordering
+        let mut sorted_moves = position.legal_moves();
+        sorted_moves.sort_unstable_by_key(|mv| score_move(position, mv));
+
         // Try each legal move
-        for mv in legal_moves {
+        for mv in sorted_moves {
             // Break if time limit exeeded
             if timer.limit_exceeded() {
                 break;
